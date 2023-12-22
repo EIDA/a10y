@@ -45,16 +45,10 @@ jobs:
           spec: 'a10y.spec'
           requirements: 'requirements.txt'
           upload_exe_with_name: 'a10y-linux-x86_64'
-
-  release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-    - uses: actions/checkout@v3
-    - uses: ncipollo/release-action@v1
-      with:
-        artifacts: "a10y-linux-x86_64.gz"
+      - uses: actions/checkout@v3
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "a10y-linux-x86_64.gz"
 
   # pyinstaller-build-win:
   #   runs-on: windows-latest
