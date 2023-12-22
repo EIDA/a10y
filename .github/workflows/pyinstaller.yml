@@ -49,8 +49,7 @@ jobs:
           upload_exe_with_name: 'a10y-linux-x86_64'
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "a10y-linux-x86_64.gz"
-          tag: "alpha"
+          artifacts: "a10y-linux-x86_64"
 
   # pyinstaller-build-win:
   #   runs-on: windows-latest
