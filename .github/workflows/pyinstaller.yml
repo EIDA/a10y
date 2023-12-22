@@ -14,25 +14,25 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.11"
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+  # build:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Set up Python 3.11
+  #     uses: actions/setup-python@v3
+  #     with:
+  #       python-version: "3.11"
+  #   - name: Install dependencies
+  #     run: |
+  #       python -m pip install --upgrade pip
+  #       pip install flake8 pytest
+  #       if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+  #   - name: Lint with flake8
+  #     run: |
+  #       # stop the build if there are Python syntax errors or undefined names
+  #       flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+  #       # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+  #       flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
 
   pyinstaller-build-linux:
@@ -45,15 +45,17 @@ jobs:
           spec: 'a10y.spec'
           requirements: 'requirements.txt'
           upload_exe_with_name: 'a10y-linux-x86_64'
-      - name: upload linux artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: a10y-linux-x86_64
-          asset_name: a10y-linux-x86_64.gz
-          asset_content_type: application/gzip
+      name: Releases
+
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "a10y-linux-x86_64.gz"
 
   # pyinstaller-build-win:
   #   runs-on: windows-latest
