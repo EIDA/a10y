@@ -10,45 +10,30 @@ The application is mainly built using [textual](https://textual.textualize.io/) 
 
 ## Installation
 
-### As a binary (recommended)
+### Using uv from pypi
 
-You can download a10y in the release section, by choosing the binary that suits your system.
+    uvx install a10y
+    
+    a10y
 
-### Using uv (Development)
-1. **Clone the Repository and Install uv**
+### Using uv from the sources
 
-   If uv is not already installed, you can add it using pip:
+If uv is not already installed, you can follow those [instructions](https://docs.astral.sh/uv/getting-started/installation/).
 
-   ```bash
-   pip install uv
-   ```
+Then follow those commands:
 
-   Then, clone the repository:
+    git clone https://github.com/EIDA/a10y.git
+    cd a10y
+    uv sync
+    uv run src/main.py
 
-   ```bash
-   git clone https://github.com/EIDA/a10y.git
-   cd a10y
-   ```
+### Docker container
 
-2. **Sync Dependencies**
-
-   Navigate to the project directory and run:
-
-   ```bash
-   uv sync
-   ```
-
-   This command will install all dependencies listed in `pyproject.toml`.
-
-3. **Run the Script**
-
-   After syncing, use:
-
-   ```bash
-   uv run
-   ```
-
-
+    git clone https://github.com/EIDA/a10y.git
+    cd a10y
+    buildah bud -t a10y
+    podman run -it a10y
+    
 ### In a python virtual environment
 
 Clone the sources, create a virtual environment, install dependencies and run as a python script:
