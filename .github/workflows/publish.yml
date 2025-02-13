@@ -27,11 +27,7 @@ jobs:
 
       - name: Build Package with UV
         run: |
-          uv pip install build
-          uv venv
-          uv pip install .
-          uv pip list  # Debug: Check installed dependencies
-          python -m build
+          uv build
 
       - name: Upload Built Package
         uses: actions/upload-artifact@v4
