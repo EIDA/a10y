@@ -3,7 +3,7 @@ name: Publish Python Package
 on:
   push:
     branches:
-      -fix-issues
+      - fix-issues
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
       - "[0-9]+.[0-9]+.[0-9]+a[0-9]+"
