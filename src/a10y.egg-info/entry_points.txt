@@ -1,0 +1,2 @@
+[console_scripts]
+a10y = a10y.main:main

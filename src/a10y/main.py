@@ -4,7 +4,7 @@ import os
 import logging
 import tomli
 from datetime import datetime, timedelta
-from app import AvailabilityUI  # Import the main UI application
+from .app import AvailabilityUI  # Import the main UI application
 
 
 def parse_arguments():
@@ -141,7 +141,9 @@ def load_config(config_path, defaults):
 
 
 
-if __name__ == "__main__":
+def main():
+ 
+
     # Parse command-line arguments
     args = parse_arguments()
 
@@ -154,6 +156,7 @@ if __name__ == "__main__":
     # Load configuration from file (if provided)
     defaults["default_file"] = args.post  # Overwrite default POST file if provided
     defaults = load_config(args.config, defaults)
+
     routing = "https://www.orfeus-eu.org/eidaws/routing/1/query?"
 
     # Run the application with loaded settings
@@ -163,3 +166,8 @@ if __name__ == "__main__":
         **defaults  # Pass unpacked defaults
     )
     app.run()
+
+
+# Ensure the script can still be executed manually
+if __name__ == "__main__":
+    main()
