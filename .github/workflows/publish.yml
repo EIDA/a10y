@@ -8,28 +8,47 @@ on:
       - "[0-9]+.[0-9]+.[0-9]+b[0-9]+"
       - "[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
 
-permissions:
-  id-token: write  
-
 jobs:
-  build-and-publish:
-    name: Build and Publish
+  release-build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH  # Ensure UV is available
+
+      - name: Build Package with UV
+        run: |
+          uv pip install build
+          uv venv
+          uv pip install .
+          uv pip list  # Debug: Check installed dependencies
+          python -m build
+
+      - name: Upload Built Package
+        uses: actions/upload-artifact@v4
         with:
-          python-version: "3.x"
+          name: release-dists
+          path: dist/
 
-      - name: Install Build Tools
-        run: pip install build
+  pypi-publish:
+    runs-on: ubuntu-latest
+    needs:
+      - release-build
+    permissions:
+      id-token: write  # Enables OpenID Connect (No API token needed)
+      contents: read
 
-      - name: Build Package
-        run: python -m build
+    steps:
+      - name: Retrieve Built Package
+        uses: actions/download-artifact@v4
+        with:
+          name: release-dists
+          path: dist/
 
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Publish to PyPI using UV
+        uses: pypa/gh-action-pypi-publish@v1.12.4
