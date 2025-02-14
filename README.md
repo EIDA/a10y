@@ -8,17 +8,21 @@ The application is mainly built using [textual](https://textual.textualize.io/) 
 
 [![asciicast](https://asciinema.org/a/HybCoSNhMJbNm2Ff8NH6zomTS.svg)](https://asciinema.org/a/HybCoSNhMJbNm2Ff8NH6zomTS)
 
-## Installation
+# Installation
 
-### Using uv from pypi
+### Using `uv` from PyPI
+If uv is not already installed, you can follow those [instructions](https://docs.astral.sh/uv/getting-started/installation/).
 
-    uvx install a10y
-    
-    a10y
+## Install EIDA a10y using uv
+```bash
+uvx eida-a10y
+```
+## Run the application
+```bash
+eida-a10y
+```
 
 ### Using uv from the sources
-
-If uv is not already installed, you can follow those [instructions](https://docs.astral.sh/uv/getting-started/installation/).
 
 Then follow those commands:
 
