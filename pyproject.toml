@@ -35,10 +35,13 @@ dependencies = [
 ]
 
 [project.scripts]
-a10y = "a10y.main:main"  # Allows running `a10y` as a CLI command
+eida-a10y = "a10y.main:main"  # Allows running `a10y` as a CLI command
 
 [tool.uv]
 package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/a10y"]
 
 
 [build-system]
