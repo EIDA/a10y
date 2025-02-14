@@ -1,5 +1,0 @@
-2025-01-13 15:26:46,972 - DEBUG - https://orfeus-eu.org:443 "GET /epb/nodes HTTP/1.1" 503 299
-2025-01-13 15:26:46,986 - DEBUG - Using proactor: IocpProactor
-2025-01-13 15:28:14,422 - DEBUG - Using proactor: IocpProactor
-2025-01-13 15:28:14,469 - DEBUG - Starting new HTTPS connection (1): www.orfeus-eu.org:443
-2025-01-13 15:28:15,279 - DEBUG - https://www.orfeus-eu.org:443 "GET /eidaws/routing/1/query?service=availability&format=post&net=1Y&sta=EREA&start=2025-01-06T15:26:46&end=2025-01-13T15:26:46 HTTP/1.1" 204 0

@@ -1,8 +1,14 @@
 LICENSE
 README.md
 pyproject.toml
+src/a10y/__init__.py
+src/a10y/a10y.py
+src/a10y/app.py
+src/a10y/main.py
+src/a10y/widgets.py
 src/a10y.egg-info/PKG-INFO
 src/a10y.egg-info/SOURCES.txt
 src/a10y.egg-info/dependency_links.txt
+src/a10y.egg-info/entry_points.txt
 src/a10y.egg-info/requires.txt
 src/a10y.egg-info/top_level.txt
