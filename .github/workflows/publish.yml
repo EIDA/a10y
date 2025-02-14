@@ -42,7 +42,7 @@ jobs:
     permissions:
       id-token: write  # Enables OpenID Connect (No API token needed)
       contents: read
-
+    environment: publish
     steps:
       - name: Retrieve Built Package
         uses: actions/download-artifact@v4
