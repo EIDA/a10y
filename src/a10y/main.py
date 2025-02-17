@@ -4,7 +4,7 @@ import os
 import logging
 import tomli
 from datetime import datetime, timedelta
-from .app import AvailabilityUI  # Import the main UI application
+from app import AvailabilityUI  # Import from same directory  # Import the main UI application
 
 
 def parse_arguments():
