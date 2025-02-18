@@ -3,12 +3,35 @@ name: Python Tests
 on: [push]
 
 jobs:
-  
+  lock_file:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH  # Ensure UV is available
+
+      - name: Lock Dependencies
+        run: uv lock --locked
 
   tests:
     runs-on: ubuntu-latest
-    
+    needs: [lock_file]
     steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - run: uv run pytest -v --durations=0 --cov
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH  # Ensure UV is available
+
+      - name: Install Dependencies
+        run: |
+          uv pip install -e .[dev] pytest pytest-cov  # Install dependencies
+
+      - name: Run Pytest using UV
+        run: uv run pytest -v --durations=0 --cov
