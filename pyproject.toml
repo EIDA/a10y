@@ -49,3 +49,8 @@ packages = ["src/a10y"]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest-cov>=6.0.0",
+]
