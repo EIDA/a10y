@@ -1,35 +1,19 @@
-name: Run Tests
+name: Python Tests
 
-on:
-  push:
-  pull_request:
+on: [push]
 
 jobs:
-  test:
+  lock_file:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: uv lock --locked
 
-      - name: Install UV
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH  # Ensure UV is available
-
-      - name: Install Dependencies using UV
-        run: |
-          uv venv .venv  # Create virtual environment
-          source .venv/bin/activate  # Activate virtual environment
-          uv pip install -e .[dev] pytest pytest-cov  # Install dependencies
-
-      - name: Run Pytest with Coverage
-        run: |
-          source .venv/bin/activate
-          pytest --junitxml=pytest-report.xml --cov=src  # Ensure `src` matches your package
-
-      - name: Upload Pytest Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-report
-          path: pytest-report.xml
+  tests:
+    runs-on: ubuntu-latest
+    needs: [lock_file]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: uv run pytest -v --durations=0 --cov
