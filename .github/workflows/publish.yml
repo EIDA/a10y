@@ -25,7 +25,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          pytest --junitxml=pytest-report.xml --cov=my_package  # Change `my_package`
+          pytest --junitxml=pytest-report.xml --cov=eida-a10y  #
 
       - name: Upload Pytest Report
         uses: actions/upload-artifact@v4
