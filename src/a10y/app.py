@@ -1,7 +1,7 @@
 from textual.app import App
 from textual.widgets import Header, Footer, Checkbox, Select, Input, Button, Collapsible, ContentSwitcher,Static,Label
 from textual.containers import ScrollableContainer , Container, Horizontal
-from widgets import Explanations, Requests, Results, Status, CursoredText # Import modular widgets
+from a10y.widgets import Explanations, Requests, Results, Status, CursoredText # Import modular widgets
 import requests
 from datetime import datetime, timedelta
 from textual.binding import Binding

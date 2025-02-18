@@ -21,6 +21,8 @@ dependencies = [
     "msgpack>=1.1.0",
     "multidict>=6.0.4",
     "pygments>=2.17.2",
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.25.3",
     "requests>=2.31.0",
     "rich>=13.7.0",
     "textual==0.43.2",
