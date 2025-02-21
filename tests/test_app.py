@@ -1,5 +1,4 @@
 from a10y.app import AvailabilityUI
-from textual.app import App
 import pytest
 
 @pytest.mark.asyncio

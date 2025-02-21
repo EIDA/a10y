@@ -5,13 +5,21 @@ from a10y.widgets import Explanations, Requests, Results, Status, CursoredText #
 import requests
 from datetime import datetime, timedelta
 from textual.binding import Binding
-from textual_autocomplete import AutoComplete, Dropdown, DropdownItem
-from textual.app import App, ComposeResult
+from textual_autocomplete import DropdownItem
+from textual.app import ComposeResult
 from textual import work
 from textual.worker import get_current_worker
 import math
 import os
 import sys
+import json
+import threading
+from pathlib import Path
+from appdirs import user_cache_dir
+
+CACHE_DIR = Path(user_cache_dir("a10y"))
+CACHE_FILE = CACHE_DIR / "nodes_cache.json"
+QUERY_URL = "https://www.orfeus-eu.org/eidaws/routing/1/globalconfig?format=fdsn"
 
 class AvailabilityUI(App):
     def __init__(self, nodes_urls, routing, **kwargs):
@@ -28,7 +36,7 @@ class AvailabilityUI(App):
         else:
             os.system("reset")  # Linux/macOS: Reset terminal
 
-    CSS_PATH = "a10y.css"
+    CSS_PATH = "a10y.tcss"
     BINDINGS = [
         Binding("ctrl+c", "quit", "Quit"),
         Binding("tab/shift+tab", "navigate", "Navigate"),
@@ -54,19 +62,46 @@ class AvailabilityUI(App):
             id="application-container"
         )
         yield Footer()
+    def fetch_nodes_from_api(self):
+        """Fetch fresh nodes from API and update cache."""
+        nodes_urls = []
+        try:
+            response = requests.get(QUERY_URL, timeout=60)
+            response.raise_for_status()
+            data = response.json()
+
+            for node in data.get("datacenters", []):
+                node_name = node["name"]
+                fdsnws_url = None
+
+                for repo in node.get("repositories", []):
+                    for service in repo.get("services", []):
+                        if service["name"] == "fdsnws-station-1":
+                            fdsnws_url = service["url"]
+                            break
+                    if fdsnws_url:
+                        break
+
+                if fdsnws_url:
+                    fdsnws_url = fdsnws_url.rstrip("/") + "/"
+                    nodes_urls.append((node_name, fdsnws_url, True))
+
+            if nodes_urls:
+                self.save_nodes_to_cache(nodes_urls)
+        except requests.RequestException:
+            pass
+        finally:
+            self.exit()
+
+    def save_nodes_to_cache(self, nodes):
+        """Save nodes to cache file permanently (no expiration)."""
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        with open(CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump({"nodes": nodes}, f)
 
 
-
-
-    def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
-        """A function to select/deselect all nodes when corresponding checkbox is clicked"""
-        if event.checkbox == self.query_one("#all-nodes"):
-            if self.query_one("#all-nodes").value:
-                self.query_one("#nodes").select_all()
-            else:
-                self.query_one("#nodes").deselect_all()
-
-
+        
+        
     def on_select_changed(self, event: Select.Changed) -> None:
         """A function to issue appropriate request and update status when a Node or when a common time frame is selected"""
         if event.select == self.query_one("#times"):
@@ -232,8 +267,11 @@ class AvailabilityUI(App):
     @work(exclusive=True, thread=True)
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         # Disable the button to prevent multiple clicks
-        self.call_from_thread(lambda: self.change_button_disabled(True))
-
+        if event.button.id == "reload-nodes":
+            button = self.query_one("#reload-nodes")
+            button.label = "Reloading..."
+            button.disabled = True
+            self.fetch_nodes_from_api()
         try:
             start = self.query_one("#start").value
             end = self.query_one("#end").value

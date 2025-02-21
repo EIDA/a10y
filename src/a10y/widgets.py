@@ -31,6 +31,7 @@ class Requests(Static):
             Checkbox("Select all Nodes", True, id="all-nodes"),
             SelectionList(*self.nodes_urls, id="nodes"),
             id="nodes-container"
+
         )
 
         yield Horizontal(
@@ -54,8 +55,10 @@ class Requests(Static):
                 Input(classes="short-input", id="channel"),
                 Dropdown(items=[], id="channels")
             ),
+            
             id="nslc"
         )
+        yield Button("Reload Nodes\n(Restart the app)", variant="primary", id="reload-nodes", disabled=False)
         yield Horizontal(
             Label("Start Time:", classes="request-label"),
             Input(classes="date-input", id="start", value=self.config["default_starttime"]),
