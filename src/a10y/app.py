@@ -16,6 +16,7 @@ import json
 import threading
 from pathlib import Path
 from appdirs import user_cache_dir
+from urllib.parse import urlparse
 
 CACHE_DIR = Path(user_cache_dir("a10y"))
 CACHE_FILE = CACHE_DIR / "nodes_cache.json"
@@ -83,8 +84,9 @@ class AvailabilityUI(App):
                         break
 
                 if fdsnws_url:
-                    fdsnws_url = fdsnws_url.rstrip("/") + "/"
-                    nodes_urls.append((node_name, fdsnws_url, True))
+                    parsed_url = urlparse(fdsnws_url)
+                    base_url = f"{parsed_url.scheme}://{parsed_url.netloc}/fdsnws/"
+                    nodes_urls.append((node_name, base_url, True))
 
             if nodes_urls:
                 self.save_nodes_to_cache(nodes_urls)

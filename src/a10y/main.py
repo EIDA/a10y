@@ -8,22 +8,22 @@ from a10y.app import AvailabilityUI
 from pathlib import Path
 from appdirs import user_cache_dir 
 import json 
-
+from urllib.parse import urlparse
 # Common constants
 DEFAULT_NODES = [
-    ("GFZ", "https://geofon.gfz.de/fdsnws/station/1/", True),
-    ("ODC", "https://orfeus-eu.org/fdsnws/station/1/", True),
-    ("ETHZ", "https://eida.ethz.ch/fdsnws/station/1/", True),
-    ("RESIF", "https://ws.resif.fr/fdsnws/station/1/", True),
-    ("INGV", "https://webservices.ingv.it/fdsnws/station/1/", True),
-    ("LMU", "https://erde.geophysik.uni-muenchen.de/fdsnws/station/1/", True),
-    ("ICGC", "https://ws.icgc.cat/fdsnws/station/1/", True),
-    ("NOA", "https://eida.gein.noa.gr/fdsnws/station/1/", True),
-    ("BGR", "https://eida.bgr.de/fdsnws/station/1/", True),
-    ("BGS", "https://eida.bgs.ac.uk/fdsnws/station/1/", True),
-    ("NIEP", "https://eida-sc3.infp.ro/fdsnws/station/1/", True),
-    ("KOERI", "https://eida.koeri.boun.edu.tr/fdsnws/station/1/", True),
-    ("UIB-NORSAR", "https://eida.geo.uib.no/fdsnws/station/1/", True),
+    ("GFZ", "https://geofon.gfz.de/fdsnws/", True),
+    ("ODC", "https://orfeus-eu.org/fdsnws/", True),
+    ("ETHZ", "https://eida.ethz.ch/fdsnws/", True),
+    ("RESIF", "https://ws.resif.fr/fdsnws/", True),
+    ("INGV", "https://webservices.ingv.it/fdsnws/", True),
+    ("LMU", "https://erde.geophysik.uni-muenchen.de/fdsnws/", True),
+    ("ICGC", "https://ws.icgc.cat/fdsnws/", True),
+    ("NOA", "https://eida.gein.noa.gr/fdsnws/", True),
+    ("BGR", "https://eida.bgr.de/fdsnws/", True),
+    ("BGS", "https://eida.bgs.ac.uk/fdsnws/", True),
+    ("NIEP", "https://eida-sc3.infp.ro/fdsnws/", True),
+    ("KOERI", "https://eida.koeri.boun.edu.tr/fdsnws/", True),
+    ("UIB-NORSAR", "https://eida.geo.uib.no/fdsnws/", True),
 ]
 
 CACHE_DIR = Path(user_cache_dir("a10y"))
@@ -63,8 +63,9 @@ def fetch_nodes_from_api():
                     break
 
             if fdsnws_url:
-                fdsnws_url = fdsnws_url.rstrip("/") + "/"
-                nodes_urls.append((node_name, fdsnws_url, True))
+                parsed_url = urlparse(fdsnws_url)
+                base_url = f"{parsed_url.scheme}://{parsed_url.netloc}/fdsnws/"
+                nodes_urls.append((node_name, base_url, True))
 
         if nodes_urls:
             save_nodes_to_cache(nodes_urls)
