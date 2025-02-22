@@ -28,7 +28,7 @@ class Requests(Static):
     def compose(self) -> ComposeResult:
         yield Static("[b]Requests Control[/b]", id="request-title")
         yield Container(
-            Checkbox("Select all Nodes", True, id="all-nodes"),
+            Checkbox("Deselect all ", False, id="all-nodes"),
             SelectionList(*self.nodes_urls, id="nodes"),
             id="nodes-container"
 
@@ -58,7 +58,8 @@ class Requests(Static):
             
             id="nslc"
         )
-        yield Button("Reload Nodes\n(Restart the app)", variant="primary", id="reload-nodes", disabled=False)
+        
+        
         yield Horizontal(
             Label("Start Time:", classes="request-label"),
             Input(classes="date-input", id="start", value=self.config["default_starttime"]),
@@ -89,6 +90,7 @@ class Requests(Static):
             Checkbox("M", self.config["default_quality_M"], id="qm"),
             id="options"
         )
+        yield Button("Reload Nodes\n(Restart the app)", variant="primary", id="reload-nodes", disabled=False)
         yield Horizontal(
             Checkbox("Include Restricted", self.config["default_includerestricted"], id="restricted"),
             Button("Send", variant="primary", id="request-button",disabled=False),
@@ -96,6 +98,7 @@ class Requests(Static):
             Button("File", variant="primary", id="file-button"),
             id="send-request"
         )
+        
 
 
 class Status(Static):

@@ -101,6 +101,20 @@ class AvailabilityUI(App):
         with open(CACHE_FILE, "w", encoding="utf-8") as f:
             json.dump({"nodes": nodes}, f)
 
+    def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
+        """Toggle between 'Select all' and 'Deselect all' when the checkbox is clicked."""
+        all_nodes_checkbox = self.query_one("#all-nodes")  # Get the checkbox widget
+        nodes_list = self.query_one("#nodes")  # Get the nodes list
+
+        if all_nodes_checkbox.value:
+            nodes_list.deselect_all()
+            all_nodes_checkbox.label = "Select all"  # ✅ Change to "Select all"
+        else:
+            nodes_list.select_all()
+            all_nodes_checkbox.label = "Deselect all"  # ✅ Change to "Deselect all"
+        
+        all_nodes_checkbox.refresh()  # ✅ Force UI update
+
 
         
         
@@ -268,6 +282,7 @@ class AvailabilityUI(App):
 
     @work(exclusive=True, thread=True)
     async def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.call_from_thread(lambda: self.change_button_disabled(True))
         # Disable the button to prevent multiple clicks
         if event.button.id == "reload-nodes":
             button = self.query_one("#reload-nodes")
