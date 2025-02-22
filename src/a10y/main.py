@@ -9,6 +9,11 @@ from pathlib import Path
 from appdirs import user_cache_dir 
 import json 
 from urllib.parse import urlparse
+import time
+import threading
+import itertools
+import sys
+from urllib.parse import urlparse
 # Common constants
 DEFAULT_NODES = [
     ("GFZ", "https://geofon.gfz.de/fdsnws/", True),
@@ -41,9 +46,28 @@ def ensure_cache_dir():
     """Ensure the cache directory exists."""
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
+
+
+QUERY_URL = "https://www.orfeus-eu.org/eidaws/routing/1/globalconfig?format=fdsn"
+
+def loading_animation(stop_event):
+    """Display a loading animation while nodes are being fetched."""
+    for frame in itertools.cycle(['|', '/', '-', '\\']):  # Simple animation
+        if stop_event.is_set():
+            break
+        sys.stdout.write(f"\rPlease wait... {frame} ")  # Overwrite the same line
+        sys.stdout.flush()
+        time.sleep(0.5)
+    sys.stdout.write("\rFetching complete! ✅\n")  # Clear animation
+
 def fetch_nodes_from_api():
-    """Fetch fresh nodes from API and save to cache."""
+    """Fetch fresh nodes from API and save to cache, with a loading animation."""
     nodes_urls = []
+    stop_event = threading.Event()
+
+    # Start loading animation in a separate thread
+    animation_thread = threading.Thread(target=loading_animation, args=(stop_event,))
+    animation_thread.start()
 
     try:
         response = requests.get(QUERY_URL, timeout=60)
@@ -69,12 +93,16 @@ def fetch_nodes_from_api():
 
         if nodes_urls:
             save_nodes_to_cache(nodes_urls)
-            return nodes_urls
 
     except requests.RequestException as e:
         logging.warning(f"Failed to fetch nodes from API: {e}")
 
-    return None
+    finally:
+        stop_event.set()  # Stop loading animation
+        animation_thread.join()  # Wait for the animation to stop
+
+    return nodes_urls if nodes_urls else None
+
 
 def save_nodes_to_cache(nodes):
     """Save nodes to cache file."""
