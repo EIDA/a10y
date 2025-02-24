@@ -7,14 +7,6 @@ jobs:
   check-secrets:
     runs-on: ubuntu-latest
     steps:
-      - name: Check for PYPI Token
-        run: |
-          if [ -z "${{ secrets.PYPI_API_TOKEN }}" ]; then
-            echo "❌ PYPI_API_TOKEN is NOT set!"
-            exit 1
-          else
-            echo "✅ PYPI_API_TOKEN exists!"
-          fi
 
       - name: Check for GitHub Token
         run: |
