@@ -8,15 +8,21 @@ from textual.suggester import Suggester
 from textual import events
 from rich.text import Text
 from rich.cells import get_character_cell_size
+from a10y import __version__
+
 class Explanations(Static):
     """Explanations box with common key functions"""
 
     def compose(self) -> ComposeResult:
-        yield Static("[b]Useful Keys[/b]")
+        yield Static("[b]Useful Keys[/b]", id="explanations-title")
         yield Static(
             """[gold3]ctrl+c[/gold3]: close app  [gold3]tab/shif+tab[/gold3]: cycle through options  [gold3]ctrl+s[/gold3]: send request  [gold3]esc[/gold3]: cancel request
             [gold3]up/down/pgUp/pgDown[/gold3]: scroll up/down if in scrollable window""",
-            id="explanations-keys")
+            id="explanations-keys"
+        )
+        yield Static(f"[b]Version:[/b] {__version__}", classes="version")  # Styled version
+
+
 
 
 class Requests(Static):

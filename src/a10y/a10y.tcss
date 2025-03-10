@@ -1,24 +1,45 @@
 Screen {
-  layout: vertical;
+  max-width:200;
+  overflow: hidden;
 }
+Header {
+  max-width: 200;
+}
+
 
 .box {
   border: solid green;
-  min-width: 150;
+  min-width: 160;
+  max-width:200;
 }
 
 .hide {
   display: none;
 }
 
+Explanations {
+  border: solid gray;
+  padding: 1;
+  background: black;
+  color: white;
+}
+
 #explanations-keys {
-  margin-left: 2;
+  text-style: bold;
+  padding: 1;
+  width: auto;
+}
+
+.version {
+  color: cyan;
+  text-style: bold italic;
+  padding-top: 1;
 }
 
 Requests {
   layout: grid;
   grid-size: 6 5;
-  grid-columns: 0.7fr 0.5fr 0.5fr 1fr 1fr 1fr;
+  grid-columns: 0.7fr 0.5fr 0.7fr 1fr 1fr 1fr;
   grid-rows: 1 3 3 3 3;
   max-height: 20;
   grid-gutter: 1;

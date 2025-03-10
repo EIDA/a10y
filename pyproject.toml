@@ -1,6 +1,6 @@
 [project]
 name = "eida-a10y"
-version = "1.0.1"
+version = "1.0.4"
 readme = "README.md"
 requires-python = "<4.0,>=3.11"
 dependencies = [

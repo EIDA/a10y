@@ -17,7 +17,7 @@ import threading
 from pathlib import Path
 from appdirs import user_cache_dir
 from urllib.parse import urlparse
-
+from a10y import __version__
 CACHE_DIR = Path(user_cache_dir("a10y"))
 CACHE_FILE = CACHE_DIR / "nodes_cache.json"
 QUERY_URL = "https://www.orfeus-eu.org/eidaws/routing/1/globalconfig?format=fdsn"
@@ -28,7 +28,7 @@ class AvailabilityUI(App):
         self.routing = routing  # Store routing URL
         self.config = kwargs  # Store remaining settings
         super().__init__()  
-
+    
     def action_quit(self) -> None:
         """Ensure terminal resets properly when quitting."""
         self.exit()
@@ -39,15 +39,18 @@ class AvailabilityUI(App):
 
     CSS_PATH = "a10y.tcss"
     BINDINGS = [
+        
         Binding("ctrl+c", "quit", "Quit"),
         Binding("tab/shift+tab", "navigate", "Navigate"),
         Binding("ctrl+s", "send_button", "Send Request"),
         Binding("?", "toggle_help", "Help"),
-        Binding("Submit Issues", "", "https://github.com/EIDA/a10y/issues"),
+        Binding("Submit Issues", "", "https://github.com/EIDA/a10y/issues",show=True),        
+        Binding("Version","",f"{__version__}"),
         Binding("ctrl+t", "first_line", "Move to first line", show=False),
         Binding("ctrl+b", "last_line", "Move to last line", show=False),
         Binding("t", "lines_view", "Toggle view to lines", show=False),
         Binding("escape", "cancel_request", "Cancel request", show=False),
+        
     ]
 
     req_text = ""
@@ -170,7 +173,7 @@ class AvailabilityUI(App):
 
 
     @work(exclusive=True, thread=True)
-    def on_input_submitted(self, event: Input.Submitted) -> None:
+    def on_input_changed(self, event: Input.Changed) -> None:
         """A function to change status when an NSLC input field is submitted (i.e. is typed and enter is hit)"""
         # COULD BE ON Change 
         # keep app responsive while making requests
@@ -386,7 +389,11 @@ class AvailabilityUI(App):
             infoBar = Static("Quality:     Timestamp:                       Trace start:                       Trace end:                    ", id="info-bar")
             self.query_one('#lines').mount(infoBar)
             self.query_one('#lines').mount(ScrollableContainer(id="results-container"))
-        num_spans = 130
+            # Dynamically calculate num_spans based on the results container width
+            num_spans = self.query_one("#results-widget").size.width // 2  # Scale width properly
+            num_spans = max(num_spans, 160)  # Ensure a reasonable span count
+
+
         if not self.query_one("#start").value.strip():
             self.query_one("#status-line").update(
                 f"{self.query_one('#status-line').renderable}\n[orange1]⚠️ Please enter a start date![/orange1]"
