@@ -1,17 +1,26 @@
 from textual.app import App
 from textual.widgets import Header, Footer, Checkbox, Select, Input, Button, Collapsible, ContentSwitcher,Static,Label
 from textual.containers import ScrollableContainer , Container, Horizontal
-from widgets import Explanations, Requests, Results, Status, CursoredText # Import modular widgets
+from a10y.widgets import Explanations, Requests, Results, Status, CursoredText # Import modular widgets
 import requests
 from datetime import datetime, timedelta
 from textual.binding import Binding
-from textual_autocomplete import AutoComplete, Dropdown, DropdownItem
-from textual.app import App, ComposeResult
+from textual_autocomplete import DropdownItem
+from textual.app import ComposeResult
 from textual import work
 from textual.worker import get_current_worker
 import math
 import os
 import sys
+import json
+import threading
+from pathlib import Path
+from appdirs import user_cache_dir
+from urllib.parse import urlparse
+from a10y import __version__
+CACHE_DIR = Path(user_cache_dir("a10y"))
+CACHE_FILE = CACHE_DIR / "nodes_cache.json"
+QUERY_URL = "https://www.orfeus-eu.org/eidaws/routing/1/globalconfig?format=fdsn"
 
 class AvailabilityUI(App):
     def __init__(self, nodes_urls, routing, **kwargs):
@@ -19,7 +28,7 @@ class AvailabilityUI(App):
         self.routing = routing  # Store routing URL
         self.config = kwargs  # Store remaining settings
         super().__init__()  
-
+    
     def action_quit(self) -> None:
         """Ensure terminal resets properly when quitting."""
         self.exit()
@@ -28,17 +37,20 @@ class AvailabilityUI(App):
         else:
             os.system("reset")  # Linux/macOS: Reset terminal
 
-    CSS_PATH = "a10y.css"
+    CSS_PATH = "a10y.tcss"
     BINDINGS = [
+        
         Binding("ctrl+c", "quit", "Quit"),
         Binding("tab/shift+tab", "navigate", "Navigate"),
         Binding("ctrl+s", "send_button", "Send Request"),
         Binding("?", "toggle_help", "Help"),
-        Binding("Submit Issues", "", "https://github.com/EIDA/a10y/issues"),
+        Binding("Submit Issues", "", "https://github.com/EIDA/a10y/issues",show=True),        
+        Binding("Version","",f"{__version__}"),
         Binding("ctrl+t", "first_line", "Move to first line", show=False),
         Binding("ctrl+b", "last_line", "Move to last line", show=False),
         Binding("t", "lines_view", "Toggle view to lines", show=False),
         Binding("escape", "cancel_request", "Cancel request", show=False),
+        
     ]
 
     req_text = ""
@@ -54,19 +66,61 @@ class AvailabilityUI(App):
             id="application-container"
         )
         yield Footer()
+    def fetch_nodes_from_api(self):
+        """Fetch fresh nodes from API and update cache."""
+        nodes_urls = []
+        try:
+            response = requests.get(QUERY_URL, timeout=60)
+            response.raise_for_status()
+            data = response.json()
 
+            for node in data.get("datacenters", []):
+                node_name = node["name"]
+                fdsnws_url = None
 
+                for repo in node.get("repositories", []):
+                    for service in repo.get("services", []):
+                        if service["name"] == "fdsnws-station-1":
+                            fdsnws_url = service["url"]
+                            break
+                    if fdsnws_url:
+                        break
 
+                if fdsnws_url:
+                    parsed_url = urlparse(fdsnws_url)
+                    base_url = f"{parsed_url.scheme}://{parsed_url.netloc}/fdsnws/"
+                    nodes_urls.append((node_name, base_url, True))
+
+            if nodes_urls:
+                self.save_nodes_to_cache(nodes_urls)
+        except requests.RequestException:
+            pass
+        finally:
+            self.exit()
+
+    def save_nodes_to_cache(self, nodes):
+        """Save nodes to cache file permanently (no expiration)."""
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        with open(CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump({"nodes": nodes}, f)
 
     def on_checkbox_changed(self, event: Checkbox.Changed) -> None:
-        """A function to select/deselect all nodes when corresponding checkbox is clicked"""
-        if event.checkbox == self.query_one("#all-nodes"):
-            if self.query_one("#all-nodes").value:
-                self.query_one("#nodes").select_all()
-            else:
-                self.query_one("#nodes").deselect_all()
+        """Toggle between 'Select all' and 'Deselect all' when the checkbox is clicked."""
+        all_nodes_checkbox = self.query_one("#all-nodes")  # Get the checkbox widget
+        nodes_list = self.query_one("#nodes")  # Get the nodes list
+
+        if all_nodes_checkbox.value:
+            nodes_list.deselect_all()
+            all_nodes_checkbox.label = "Select all"  # ✅ Change to "Select all"
+        else:
+            nodes_list.select_all()
+            all_nodes_checkbox.label = "Deselect all"  # ✅ Change to "Deselect all"
+        
+        all_nodes_checkbox.refresh()  # ✅ Force UI update
 
 
+        
+        
     def on_select_changed(self, event: Select.Changed) -> None:
         """A function to issue appropriate request and update status when a Node or when a common time frame is selected"""
         if event.select == self.query_one("#times"):
@@ -119,7 +173,7 @@ class AvailabilityUI(App):
 
 
     @work(exclusive=True, thread=True)
-    def on_input_submitted(self, event: Input.Submitted) -> None:
+    def on_input_changed(self, event: Input.Changed) -> None:
         """A function to change status when an NSLC input field is submitted (i.e. is typed and enter is hit)"""
         # COULD BE ON Change 
         # keep app responsive while making requests
@@ -231,9 +285,13 @@ class AvailabilityUI(App):
 
     @work(exclusive=True, thread=True)
     async def on_button_pressed(self, event: Button.Pressed) -> None:
-        # Disable the button to prevent multiple clicks
         self.call_from_thread(lambda: self.change_button_disabled(True))
-
+        # Disable the button to prevent multiple clicks
+        if event.button.id == "reload-nodes":
+            button = self.query_one("#reload-nodes")
+            button.label = "Reloading..."
+            button.disabled = True
+            self.fetch_nodes_from_api()
         try:
             start = self.query_one("#start").value
             end = self.query_one("#end").value
@@ -331,7 +389,11 @@ class AvailabilityUI(App):
             infoBar = Static("Quality:     Timestamp:                       Trace start:                       Trace end:                    ", id="info-bar")
             self.query_one('#lines').mount(infoBar)
             self.query_one('#lines').mount(ScrollableContainer(id="results-container"))
-        num_spans = 130
+            # Dynamically calculate num_spans based on the results container width
+            num_spans = self.query_one("#results-widget").size.width // 2  # Scale width properly
+            num_spans = max(num_spans, 160)  # Ensure a reasonable span count
+
+
         if not self.query_one("#start").value.strip():
             self.query_one("#status-line").update(
                 f"{self.query_one('#status-line').renderable}\n[orange1]⚠️ Please enter a start date![/orange1]"

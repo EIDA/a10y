@@ -1,0 +1,24 @@
+name: Run Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH  # Ensure UV is available
+
+      - name: Run Pytest with Coverage
+        run: |
+          uv run pytest --junitxml=pytest-report.xml --cov=src  # Ensure `src` matches your package
+
+
